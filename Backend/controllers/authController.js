@@ -141,7 +141,7 @@ exports.forgotPassword = async (req, res) => {
 
     // Send email with reset link
     const { sendPasswordResetEmail } = require('../utils/emailService');
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
 
     try {
       await sendPasswordResetEmail(user.email, user.name, resetUrl);

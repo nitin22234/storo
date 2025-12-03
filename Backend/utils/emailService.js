@@ -101,7 +101,7 @@ const sendBookingConfirmation = async (userEmail, userName, bookingDetails) => {
               </ul>
 
               <center>
-                <a href="http://localhost:3000/dashboard" class="button">View My Bookings</a>
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard" class="button">View My Bookings</a>
               </center>
 
               <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
