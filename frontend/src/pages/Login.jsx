@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -8,6 +8,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [loginType, setLoginType] = useState('user'); // 'user' or 'partner'
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,19 +21,22 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await authAPI.login(form.email, form.password);
+      const result = await login(form.email, form.password);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Get user data from localStorage to check role
+      const userData = JSON.parse(localStorage.getItem('user'));
 
       // Check if role matches login type
-      if (loginType === 'partner' && response.user.role !== 'partner') {
+      if (loginType === 'partner' && userData.role !== 'partner') {
         throw new Error('This account is not authorized as a partner.');
       }
 
-      // Save token and user data to localStorage
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-
       // Redirect based on role
-      if (response.user.role === 'partner') {
+      if (userData.role === 'partner') {
         navigate('/partner-dashboard');
       } else {
         navigate('/');

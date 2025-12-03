@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { partnerAPI } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 function BecomePartner() {
   const [form, setForm] = useState({
@@ -19,6 +20,7 @@ function BecomePartner() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAuthData } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -62,9 +64,8 @@ function BecomePartner() {
 
       const response = await partnerAPI.createPartner(partnerData);
 
-      // Auto-login on success
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Update auth context with the new user data
+      setAuthData(response.token, response.user);
 
       navigate('/partner-dashboard');
 

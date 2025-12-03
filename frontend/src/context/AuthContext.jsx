@@ -64,12 +64,20 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const setAuthData = (token, userData) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(token);
+    setUser(userData);
+  };
+
   const value = {
     user,
     token,
     login,
     register,
     logout,
+    setAuthData,
     isAuthenticated: !!token,
     loading,
   };

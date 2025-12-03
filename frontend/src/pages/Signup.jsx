@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 function Signup() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,12 +26,11 @@ function Signup() {
     setLoading(true);
 
     try {
-      // Default role is 'user'
-      const response = await authAPI.register(form.name, form.email, form.password, 'user');
+      const result = await register(form.name, form.email, form.password);
 
-      // Save token and user data to localStorage
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       navigate('/'); // Redirect to home page
     } catch (err) {
