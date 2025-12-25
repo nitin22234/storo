@@ -54,25 +54,21 @@ exports.verifyPayment = async (req, res) => {
 
       console.log("✅ Payment verified and booking status updated to 'booked' with payment 'paid'");
 
-      // Send booking confirmation email after successful payment
-      try {
-        if (booking.user && booking.user.email) {
-          await sendBookingConfirmation(booking.user.email, booking.user.name, {
-            bookingId: booking._id,
-            partnerName: booking.partner.name,
-            partnerCity: booking.partner.address?.city || 'N/A',
-            startDate: booking.startAt,
-            endDate: booking.endAt,
-            weightKg: booking.weightKg,
-            totalAmount: booking.price,
-            status: booking.status,
-            paymentStatus: booking.paymentStatus
-          });
-          console.log("✅ Booking confirmation email sent");
-        }
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError.message);
-        // Don't fail the payment verification if email fails
+      // Send booking confirmation email in the background
+      if (booking.user && booking.user.email) {
+        sendBookingConfirmation(booking.user.email, booking.user.name, {
+          bookingId: booking._id,
+          partnerName: booking.partner.name,
+          partnerCity: booking.partner.address?.city || 'N/A',
+          startDate: booking.startAt,
+          endDate: booking.endAt,
+          weightKg: booking.weightKg,
+          totalAmount: booking.price,
+          status: booking.status,
+          paymentStatus: booking.paymentStatus
+        })
+          .then(() => console.log("✅ Booking confirmation email sent"))
+          .catch(emailError => console.error('Email sending failed:', emailError.message));
       }
 
       return res.json({ ok: true, bookingId: booking._id });

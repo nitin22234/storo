@@ -1,11 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const morgan = require('morgan');
+const compression = require('compression');
 require('dotenv').config();
 
 const app = express();
 
 // Middleware
+app.use(compression()); // Compress all responses
+app.use(morgan('dev')); // Log requests for debugging
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://storo-amber.vercel.app'],
   credentials: true,
@@ -20,10 +24,13 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 console.log('🔄 Attempting to connect to MongoDB...');
 
-mongoose.connect(MONGODB_URI)
+mongoose.connect(MONGODB_URI, {
+  maxPoolSize: 10, // Maintain up to 10 socket connections
+  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+})
   .then(() => {
     console.log('✅ MongoDB Connected Successfully to Atlas!');
-    console.log('📊 Database:', mongoose.connection.db.databaseName);
   })
   .catch((err) => {
     console.error('❌ MongoDB Connection Error:', err.message);
@@ -45,10 +52,11 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Test route
+// Test route & Keep-awake ping
 app.get('/', (req, res) => {
   res.json({
-    message: 'Storo API is running',
+    message: 'Storo API is healthy',
+    timestamp: new Date().toISOString(),
     mongoStatus: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
 });

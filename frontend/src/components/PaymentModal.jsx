@@ -37,6 +37,10 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
         description: `Booking #${booking._id}`,
         order_id: order.id,
         handler: async function (response) {
+          // Set loading to true while verifying
+          setLoading(true);
+          setError('');
+
           try {
             // Verify payment on backend
             const verification = await paymentAPI.verifyPayment(
@@ -54,8 +58,12 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
                 bookingId: booking._id,
                 amount: booking.price,
               };
+
+              // Reset loading before calling success callback
+              setLoading(false);
               onPaymentSuccess(transactionDetails);
             } else {
+              setLoading(false);
               setError('Payment verification failed');
               // Delete the pending booking
               try {
@@ -65,6 +73,7 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
               }
             }
           } catch (err) {
+            setLoading(false);
             setError(err.message || 'Payment verification failed');
             // Delete the pending booking on error
             try {
@@ -72,8 +81,6 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
             } catch (deleteErr) {
               console.error('Failed to delete booking:', deleteErr);
             }
-          } finally {
-            setLoading(false);
           }
         },
         prefill: {
@@ -86,12 +93,16 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
         modal: {
           ondismiss: function () {
             setLoading(false);
+            setError('');
           },
         },
       };
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
+
+      // Reset loading state after opening Razorpay modal
+      setLoading(false);
     } catch (err) {
       setError(err.message || 'Failed to initiate payment');
       setLoading(false);

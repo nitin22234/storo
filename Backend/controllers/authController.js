@@ -139,21 +139,13 @@ exports.forgotPassword = async (req, res) => {
     user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    // Send email with reset link
+    // Send email with reset link - Async (don't block the response)
     const { sendPasswordResetEmail } = require('../utils/emailService');
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
 
-    try {
-      await sendPasswordResetEmail(user.email, user.name, resetUrl);
-      console.log("✅ Password reset email sent to:", user.email);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError.message);
-      // Clear reset token if email fails
-      user.resetToken = undefined;
-      user.resetTokenExpiry = undefined;
-      await user.save();
-      return res.status(500).json({ error: "Failed to send reset email. Please try again." });
-    }
+    sendPasswordResetEmail(user.email, user.name, resetUrl)
+      .then(() => console.log("✅ Password reset email sent to:", user.email))
+      .catch(emailError => console.error('Email sending failed:', emailError.message));
 
     res.json({ message: "If an account exists with this email, you will receive a password reset link." });
   } catch (err) {
