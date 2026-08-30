@@ -1,8 +1,10 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PageTransition from './components/PageTransition';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/Services';
@@ -30,33 +32,60 @@ const ProtectedRoute = ({ children }) => {
   return token ? children : <Navigate to="/login" />;
 };
 
+// Scroll to top helper on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }, [pathname]);
+
+  return null;
+}
+
+// Animated Routes Wrapper with AnimatePresence
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path='/' element={<PageTransition><Home /></PageTransition>} />
+        <Route path='/about-us' element={<PageTransition><AboutUs /></PageTransition>} />
+        <Route path='/services' element={<PageTransition><Services /></PageTransition>} />
+        <Route path='/cities' element={<PageTransition><Cities /></PageTransition>} />
+        <Route path='/find-storage' element={<PageTransition><FindStorage /></PageTransition>} />
+        {/* <Route path='/events' element={<PageTransition><Events /></PageTransition>} /> */}
+        <Route path='/become-partner' element={<PageTransition><BecomePartner /></PageTransition>} />
+        <Route path='/login' element={<PageTransition><Login /></PageTransition>} />
+        <Route path='/signup' element={<PageTransition><Signup /></PageTransition>} />
+        <Route path='/forgot-password' element={<PageTransition><ForgotPassword /></PageTransition>} />
+        <Route path='/reset-password/:token' element={<PageTransition><ResetPassword /></PageTransition>} />
+        <Route path='/booking' element={<ProtectedRoute><PageTransition><Booking /></PageTransition></ProtectedRoute>} />
+        <Route path='/dashboard' element={<ProtectedRoute><PageTransition><Dashboard /></PageTransition></ProtectedRoute>} />
+        <Route path='/partner-dashboard' element={<ProtectedRoute><PageTransition><PartnerDashboard /></PageTransition></ProtectedRoute>} />
+        <Route path='/admin-dashboard' element={<ProtectedRoute><PageTransition><AdminDashboard /></PageTransition></ProtectedRoute>} />
+        <Route path='/profile' element={<ProtectedRoute><PageTransition><Profile /></PageTransition></ProtectedRoute>} />
+        <Route path='/payment-billing' element={<ProtectedRoute><PageTransition><PaymentBilling /></PageTransition></ProtectedRoute>} />
+        <Route path='/notifications' element={<ProtectedRoute><PageTransition><Notifications /></PageTransition></ProtectedRoute>} />
+        <Route path='/locations' element={<PageTransition><Locations /></PageTransition>} />
+        <Route path='/support' element={<PageTransition><Support /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Navbar />
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/about-us' element={<AboutUs />} />
-          <Route path='/services' element={<Services />} />
-          <Route path='/cities' element={<Cities />} />
-          <Route path='/find-storage' element={<FindStorage />} />
-          {/* <Route path='/events' element={<Events />} /> */}
-          <Route path='/become-partner' element={<BecomePartner />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/signup' element={<Signup />} />
-          <Route path='/forgot-password' element={<ForgotPassword />} />
-          <Route path='/reset-password/:token' element={<ResetPassword />} />
-          <Route path='/booking' element={<ProtectedRoute><Booking /></ProtectedRoute>} />
-          <Route path='/dashboard' element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path='/partner-dashboard' element={<ProtectedRoute><PartnerDashboard /></ProtectedRoute>} />
-          <Route path='/admin-dashboard' element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path='/payment-billing' element={<ProtectedRoute><PaymentBilling /></ProtectedRoute>} />
-          <Route path='/notifications' element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path='/locations' element={<Locations />} />
-          <Route path='/support' element={<Support />} />
-        </Routes>
+        <AnimatedRoutes />
         <Footer />
       </Router>
     </AuthProvider>

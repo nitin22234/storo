@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { partnerAPI } from '../api';
+import { FadeIn, StaggerContainer, StaggerItem, HoverCard } from '../components/MotionEffects';
 
 function FindStorage() {
     const navigate = useNavigate();
@@ -11,7 +13,6 @@ function FindStorage() {
     const [searchLocation, setSearchLocation] = useState(location.state?.searchQuery || '');
     const [filteredPartners, setFilteredPartners] = useState([]);
 
-    // Default location for finding all partners (Delhi coordinates)
     const defaultLocation = { lat: 28.6139, lng: 77.2090 };
 
     useEffect(() => {
@@ -22,16 +23,14 @@ function FindStorage() {
         setLoading(true);
         setError('');
         try {
-            // Fetch partners with a large radius to get all partners
             const allPartners = await partnerAPI.findNearby(
                 defaultLocation.lng,
                 defaultLocation.lat,
-                500000 // 500km radius to get all partners across India
+                500000
             );
             setPartners(allPartners);
             setFilteredPartners(allPartners);
 
-            // If there's a search query from navigation, filter immediately
             if (location.state?.searchQuery) {
                 filterPartners(allPartners, location.state.searchQuery);
             }
@@ -84,206 +83,220 @@ function FindStorage() {
                 overflow: "hidden"
             }}
         >
-            {/* Funky Bold Background */}
-            <div style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 0,
-                overflow: "hidden"
-            }}>
-                {/* Purple Gradient Blob */}
-                <div style={{
-                    position: "absolute",
-                    top: "-20%",
-                    right: "-10%",
-                    width: "700px",
-                    height: "700px",
-                    background: "radial-gradient(circle, rgba(139, 61, 136, 0.3) 0%, rgba(139, 61, 136, 0.12) 40%, transparent 70%)",
-                    borderRadius: "50%",
-                    filter: "blur(80px)",
-                    animation: "float 20s ease-in-out infinite"
-                }}></div>
-
-                {/* Green Gradient Blob */}
-                <div style={{
-                    position: "absolute",
-                    bottom: "-15%",
-                    left: "-10%",
-                    width: "600px",
-                    height: "600px",
-                    background: "radial-gradient(circle, rgba(4, 120, 87, 0.25) 0%, rgba(4, 120, 87, 0.1) 40%, transparent 70%)",
-                    borderRadius: "50%",
-                    filter: "blur(80px)",
-                    animation: "float 25s ease-in-out infinite reverse"
-                }}></div>
+            {/* Background animated blobs */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none" }}>
+                <motion.div
+                    animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+                    transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+                    style={{
+                        position: "absolute",
+                        top: "-15%",
+                        right: "-8%",
+                        width: "650px",
+                        height: "650px",
+                        background: "radial-gradient(circle, rgba(139, 61, 136, 0.15) 0%, transparent 70%)",
+                        borderRadius: "50%",
+                        filter: "blur(70px)",
+                    }}
+                />
+                <motion.div
+                    animate={{ x: [0, -40, 0], y: [0, 30, 0] }}
+                    transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+                    style={{
+                        position: "absolute",
+                        bottom: "-15%",
+                        left: "-8%",
+                        width: "600px",
+                        height: "600px",
+                        background: "radial-gradient(circle, rgba(4, 120, 87, 0.15) 0%, transparent 70%)",
+                        borderRadius: "50%",
+                        filter: "blur(70px)",
+                    }}
+                />
             </div>
-
-            {/* Add keyframes animation */}
-            <style>{`
-                @keyframes float {
-                    0%, 100% {
-                        transform: translate(0, 0) scale(1);
-                    }
-                    33% {
-                        transform: translate(50px, -50px) scale(1.15);
-                    }
-                    66% {
-                        transform: translate(-30px, 30px) scale(0.85);
-                    }
-                }
-            `}</style>
 
             <div className="container" style={{ position: "relative", zIndex: 1 }}>
                 {/* Header Section */}
-                <div className="row mb-5">
-                    <div className="col-12 text-center">
-                        <h2 className="fw-bold mb-2" style={{ color: "#1a1a1a", fontSize: "2.5rem", fontFamily: "'Inter', sans-serif" }}>Find Storage Partners</h2>
-                        <p style={{ color: "#6b7280" }}>Browse all available storage locations</p>
-                    </div>
-                </div>
-
-                {/* Search Section */}
-                <div className="row mb-5">
-                    <div className="col-md-8 col-lg-6 mx-auto">
-                        <div className="bg-white shadow-sm border p-3" style={{ borderRadius: '1rem', borderColor: '#e5e7eb' }}>
-                            <div className="input-group input-group-lg">
-                                <input
-                                    type="text"
-                                    className="form-control border-0"
-                                    placeholder="Search by city, name or location..."
-                                    value={searchLocation}
-                                    onChange={(e) => setSearchLocation(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                                    style={{ fontSize: '1rem' }}
-                                />
-                                <button
-                                    className="btn px-5 fw-bold"
-                                    onClick={handleSearch}
-                                    style={{
-                                        background: 'linear-gradient(135deg, #047857 0%, #065f46 100%)',
-                                        color: 'white',
-                                        border: 'none'
-                                    }}
-                                >
-                                    Search
-                                </button>
-                            </div>
+                <FadeIn direction="up">
+                    <div className="row mb-5">
+                        <div className="col-12 text-center">
+                            <h2 className="fw-bold mb-2" style={{ color: "#1a1a1a", fontSize: "2.5rem", fontFamily: "'Inter', sans-serif" }}>
+                                Find Storage Partners
+                            </h2>
+                            <p style={{ color: "#6b7280" }}>Browse all available verified storage locations across India</p>
                         </div>
                     </div>
-                </div>
+                </FadeIn>
+
+                {/* Search Section */}
+                <FadeIn direction="up" delay={0.1}>
+                    <div className="row mb-5">
+                        <div className="col-md-8 col-lg-6 mx-auto">
+                            <motion.div
+                                whileHover={{ scale: 1.01 }}
+                                className="bg-white shadow-sm border p-3"
+                                style={{ borderRadius: '1rem', borderColor: '#e5e7eb' }}
+                            >
+                                <div className="input-group input-group-lg">
+                                    <input
+                                        type="text"
+                                        className="form-control border-0 shadow-none"
+                                        placeholder="Search by city, name or location..."
+                                        value={searchLocation}
+                                        onChange={(e) => setSearchLocation(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                        style={{ fontSize: '1rem' }}
+                                    />
+                                    <motion.button
+                                        whileHover={{ scale: 1.04 }}
+                                        whileTap={{ scale: 0.96 }}
+                                        className="btn px-4 fw-bold"
+                                        onClick={handleSearch}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #047857 0%, #065f46 100%)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '0.6rem'
+                                        }}
+                                    >
+                                        Search
+                                    </motion.button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
+                </FadeIn>
 
                 {/* Error Message */}
-                {error && (
-                    <div className="alert alert-warning" role="alert">
-                        {error}
-                    </div>
-                )}
+                <AnimatePresence>
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="alert alert-warning text-center mx-auto"
+                            style={{ maxWidth: '600px', borderRadius: '12px' }}
+                            role="alert"
+                        >
+                            {error}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Loading State */}
                 {loading ? (
-                    <div className="text-center py-5">
-                        <div className="spinner-border text-primary" role="status">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center py-5"
+                    >
+                        <div className="spinner-border text-success" role="status" style={{ width: "3rem", height: "3rem" }}>
                             <span className="visually-hidden">Loading...</span>
                         </div>
-                        <p className="mt-3 text-muted">Loading storage partners...</p>
-                    </div>
+                        <p className="mt-3 text-muted fw-medium">Loading storage partners...</p>
+                    </motion.div>
                 ) : filteredPartners.length === 0 ? (
-                    <div className="text-center py-5">
-                        <span className="display-1">📦</span>
-                        <h5 className="mt-3 text-muted">No partners found</h5>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-5"
+                    >
+                        <span className="display-1 d-block mb-3">📦</span>
+                        <h5 className="text-muted fw-bold">No storage partners found</h5>
                         <p className="text-muted">
-                            {searchLocation ? 'Try a different search term' : 'No storage partners available yet'}
+                            {searchLocation ? 'Try searching for a different city or area name' : 'No storage partners available yet'}
                         </p>
-                    </div>
+                    </motion.div>
                 ) : (
                     <>
                         {/* Results Count */}
-                        <div className="row mb-4">
-                            <div className="col-12">
-                                <p style={{ color: "#6b7280" }}>
-                                    Showing {filteredPartners.length} storage partner{filteredPartners.length !== 1 ? 's' : ''}
-                                </p>
+                        <FadeIn direction="up">
+                            <div className="row mb-4">
+                                <div className="col-12">
+                                    <p style={{ color: "#6b7280" }} className="fw-medium">
+                                        Showing <span className="text-dark fw-bold">{filteredPartners.length}</span> storage partner{filteredPartners.length !== 1 ? 's' : ''}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        </FadeIn>
 
                         {/* Partners Grid */}
-                        <div className="row g-4">
+                        <StaggerContainer staggerChildren={0.08} className="row g-4">
                             {filteredPartners.map((partner) => (
                                 <div className="col-md-6 col-lg-4" key={partner._id}>
-                                    <div
-                                        className="card h-100 bg-white shadow-sm"
-                                        style={{
-                                            borderRadius: '1rem',
-                                            transition: 'transform 0.2s, box-shadow 0.2s',
-                                            border: '1px solid #e5e7eb'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(-5px)';
-                                            e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.boxShadow = '';
-                                        }}
-                                    >
-                                        <div className="card-body p-4">
-                                            {/* Partner Name */}
-                                            <div className="d-flex justify-content-between align-items-start mb-3">
-                                                <h5 className="fw-bold mb-0" style={{ color: "#1a1a1a" }}>{partner.name}</h5>
-                                                <span className="badge" style={{ backgroundColor: "#047857", color: "white" }}>Available</span>
-                                            </div>
+                                    <StaggerItem className="h-100">
+                                        <HoverCard
+                                            className="card h-100 bg-white shadow-sm"
+                                            style={{
+                                                borderRadius: '1.2rem',
+                                                border: '1px solid #e5e7eb',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            <div className="card-body p-4 d-flex flex-column justify-content-between">
+                                                <div>
+                                                    {/* Partner Header */}
+                                                    <div className="d-flex justify-content-between align-items-start mb-3">
+                                                        <h5 className="fw-bold mb-0" style={{ color: "#1a1a1a" }}>{partner.name}</h5>
+                                                        <span
+                                                            className="badge shadow-sm"
+                                                            style={{ backgroundColor: "#047857", color: "white", borderRadius: "8px", padding: "6px 10px" }}
+                                                        >
+                                                            ● Available
+                                                        </span>
+                                                    </div>
 
-                                            {/* Address */}
-                                            <div className="mb-3">
-                                                <small style={{ color: "#6b7280" }}>📍 Location</small>
-                                                <p className="mb-0" style={{ color: "#1a202c" }}>{partner.address}</p>
-                                            </div>
+                                                    {/* Address */}
+                                                    <div className="mb-3">
+                                                        <small style={{ color: "#6b7280" }}>📍 Location</small>
+                                                        <p className="mb-0 fw-medium" style={{ color: "#1a202c" }}>{partner.address}</p>
+                                                    </div>
 
-                                            <hr style={{ borderColor: "#e5e7eb" }} />
+                                                    <hr style={{ borderColor: "#f3f4f6" }} />
 
-                                            {/* Details */}
-                                            <div className="row mb-3">
-                                                <div className="col-6">
-                                                    <small style={{ color: "#6b7280" }}>Capacity</small>
-                                                    <p className="mb-0 fw-bold" style={{ color: "#1a202c" }}>{partner.capacity} bags</p>
+                                                    {/* Capacity & Price */}
+                                                    <div className="row mb-3">
+                                                        <div className="col-6">
+                                                            <small style={{ color: "#6b7280" }}>Capacity</small>
+                                                            <p className="mb-0 fw-bold" style={{ color: "#1a202c" }}>{partner.capacity} bags</p>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <small style={{ color: "#6b7280" }}>Base Price</small>
+                                                            <p className="mb-0 fw-bold text-success fs-5">₹{partner.base}<span className="fs-6 text-muted fw-normal">/day</span></p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Additional Details */}
+                                                    <div className="mb-4 p-2 rounded-2" style={{ backgroundColor: "#f9fafb" }}>
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="small text-muted">Per Kg: <strong className="text-dark">₹{partner.perKg}</strong></span>
+                                                            <span className="small text-muted">Per Hour: <strong className="text-dark">₹{partner.perHour}</strong></span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="col-6">
-                                                    <small style={{ color: "#6b7280" }}>Base Price</small>
-                                                    <p className="mb-0 fw-bold" style={{ color: "#047857" }}>₹{partner.base}/day</p>
-                                                </div>
-                                            </div>
 
-                                            {/* Pricing Details */}
-                                            <div className="mb-3">
-                                                <small style={{ color: "#6b7280" }}>Additional Charges</small>
-                                                <div className="d-flex justify-content-between mt-1">
-                                                    <span className="small" style={{ color: "#4a5568" }}>Per Kg: ₹{partner.perKg}</span>
-                                                    <span className="small" style={{ color: "#4a5568" }}>Per Hour: ₹{partner.perHour}</span>
-                                                </div>
+                                                {/* Book Now Button */}
+                                                <motion.button
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    className="btn w-100 fw-bold shadow-sm"
+                                                    onClick={() => handleBookNow(partner)}
+                                                    style={{
+                                                        backgroundColor: '#047857',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '0.8rem',
+                                                        borderRadius: '0.75rem'
+                                                    }}
+                                                >
+                                                    Book Now →
+                                                </motion.button>
                                             </div>
-
-                                            {/* Book Now Button */}
-                                            <button
-                                                className="btn w-100 fw-bold"
-                                                onClick={() => handleBookNow(partner)}
-                                                style={{
-                                                    backgroundColor: '#047857',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    padding: '0.75rem',
-                                                    borderRadius: '0.5rem'
-                                                }}
-                                            >
-                                                Book Now
-                                            </button>
-                                        </div>
-                                    </div>
+                                        </HoverCard>
+                                    </StaggerItem>
                                 </div>
                             ))}
-                        </div>
+                        </StaggerContainer>
                     </>
                 )}
             </div>
@@ -292,4 +305,3 @@ function FindStorage() {
 }
 
 export default FindStorage;
-

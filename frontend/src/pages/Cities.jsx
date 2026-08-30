@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { partnerAPI } from '../api';
+import { FadeIn, StaggerContainer, StaggerItem, HoverCard } from '../components/MotionEffects';
 
 function Cities() {
   const navigate = useNavigate();
@@ -26,11 +28,10 @@ function Cities() {
       const partners = await partnerAPI.findNearby(
         city.coordinates.lng,
         city.coordinates.lat,
-        10000 // 10km radius
+        10000
       );
 
       if (partners.length > 0) {
-        // Navigate to booking page with city info
         navigate('/booking', { state: { city: city.name, partners } });
       } else {
         setError(`No partners found in ${city.name} at the moment.`);
@@ -48,65 +49,89 @@ function Cities() {
       style={{
         backgroundColor: "#ffffff",
         minHeight: '90vh',
-        color: "#1a1a1a"
+        color: "#1a1a1a",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
-      <div className="container">
-        <h2 className="fw-bold text-center mb-5 display-6" style={{ color: "#1a1a1a", fontFamily: "'Inter', sans-serif" }}>Where You Can Find Us</h2>
-
-        {error && (
-          <div className="alert alert-warning alert-dismissible fade show" role="alert">
-            {error}
-            <button
-              type="button"
-              className="btn-close"
-              onClick={() => setError('')}
-              aria-label="Close"
-            ></button>
+      <div className="container" style={{ position: "relative", zIndex: 1 }}>
+        <FadeIn direction="up">
+          <div className="text-center mb-5">
+            <span className="badge px-3 py-2 rounded-pill mb-2" style={{ backgroundColor: "#e0e7ff", color: "#0d2aabff", fontWeight: "600" }}>
+              Pan-India Coverage
+            </span>
+            <h2 className="fw-bold display-6" style={{ color: "#1a1a1a", fontFamily: "'Inter', sans-serif" }}>
+              Where You Can Find Us
+            </h2>
+            <p className="text-muted">Instant luggage storage across major transit hubs in India</p>
           </div>
-        )}
+        </FadeIn>
 
-        <div className="row g-4">
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="alert alert-warning alert-dismissible fade show text-center mx-auto"
+              style={{ maxWidth: '600px', borderRadius: '12px' }}
+              role="alert"
+            >
+              {error}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setError('')}
+                aria-label="Close"
+              ></button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <StaggerContainer staggerChildren={0.08} className="row g-4">
           {cities.map(c => (
             <div className="col-md-6 col-lg-3" key={c.name}>
-              <div
-                className="card h-100 text-center shadow border-0 p-4 glass-effect city-card"
-                style={{
-                  borderRadius: "18px",
-                  transition: "transform .15s",
-                  backdropFilter: "blur(10px)",
-                  background: "#ffffff80"
-                }}
-                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-              >
-                <div
-                  className="d-flex align-items-center justify-content-center mb-3 mx-auto"
+              <StaggerItem className="h-100">
+                <HoverCard
+                  className="card h-100 text-center shadow-sm border p-4 bg-white"
                   style={{
-                    width: 78,
-                    height: 78,
-                    borderRadius: "50%",
-                    background: c.gradient,
-                    boxShadow: "0 2px 12px #00000020"
-                  }}>
-                  <span className="fs-1 text-white">{c.emoji}</span>
-                </div>
-                <h5 className="fw-bold">{c.name}</h5>
-                <button
-                  onClick={() => handleViewPartners(c)}
-                  className="btn btn-outline-primary btn-sm mt-2 rounded-pill shadow-sm"
-                  disabled={loading}
+                    borderRadius: "20px",
+                    border: "1px solid #e5e7eb"
+                  }}
                 >
-                  {loading ? 'Loading...' : 'View Partners'}
-                </button>
-              </div>
+                  <motion.div
+                    whileHover={{ rotate: 10, scale: 1.15 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="d-flex align-items-center justify-content-center mb-3 mx-auto"
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      background: c.gradient,
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.12)"
+                    }}
+                  >
+                    <span className="fs-1">{c.emoji}</span>
+                  </motion.div>
+                  <h5 className="fw-bold mb-3">{c.name}</h5>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleViewPartners(c)}
+                    className="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 fw-semibold w-100"
+                    disabled={loading}
+                    style={{ borderColor: "#0d2aabff", color: "#0d2aabff" }}
+                  >
+                    {loading ? 'Loading...' : 'View Partners →'}
+                  </motion.button>
+                </HoverCard>
+              </StaggerItem>
             </div>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </div>
   );
 }
 
 export default Cities;
-

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { paymentAPI, bookingAPI } from '../api';
 
 function PaymentModal({ booking, onPaymentSuccess, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Razorpay script is loaded in index.html
 
   const handlePayment = async () => {
     if (!window.Razorpay) {
@@ -17,11 +16,7 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
     setError('');
 
     try {
-      // Create order on backend
       const order = await paymentAPI.createOrder(booking._id, booking.price);
-
-      // Note: In production, you should get the Razorpay key from your backend
-      // For now, using environment variable or a placeholder
       const razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
       if (!razorpayKey) {
         setError('Razorpay key not configured. Please add REACT_APP_RAZORPAY_KEY_ID to your .env file.');
@@ -37,12 +32,10 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
         description: `Booking #${booking._id}`,
         order_id: order.id,
         handler: async function (response) {
-          // Set loading to true while verifying
           setLoading(true);
           setError('');
 
           try {
-            // Verify payment on backend
             const verification = await paymentAPI.verifyPayment(
               response.razorpay_order_id,
               response.razorpay_payment_id,
@@ -51,7 +44,6 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
             );
 
             if (verification.ok) {
-              // Pass transaction details to success handler
               const transactionDetails = {
                 paymentId: response.razorpay_payment_id,
                 orderId: response.razorpay_order_id,
@@ -59,13 +51,11 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
                 amount: booking.price,
               };
 
-              // Reset loading before calling success callback
               setLoading(false);
               onPaymentSuccess(transactionDetails);
             } else {
               setLoading(false);
               setError('Payment verification failed');
-              // Delete the pending booking
               try {
                 await bookingAPI.deleteBooking(booking._id);
               } catch (err) {
@@ -75,7 +65,6 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
           } catch (err) {
             setLoading(false);
             setError(err.message || 'Payment verification failed');
-            // Delete the pending booking on error
             try {
               await bookingAPI.deleteBooking(booking._id);
             } catch (deleteErr) {
@@ -100,8 +89,6 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-
-      // Reset loading state after opening Razorpay modal
       setLoading(false);
     } catch (err) {
       setError(err.message || 'Failed to initiate payment');
@@ -110,70 +97,110 @@ function PaymentModal({ booking, onPaymentSuccess, onClose }) {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="modal show d-block"
       tabIndex="-1"
-      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        zIndex: 1060,
+      }}
     >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content" style={{ borderRadius: '1.5rem', border: '1px solid #eaddd7', backgroundColor: '#fff' }}>
-          <div className="modal-header" style={{ borderBottom: '1px solid #eaddd7' }}>
+        <motion.div
+          initial={{ scale: 0.92, y: 20, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.95, y: 10, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+          className="modal-content shadow-2xl"
+          style={{
+            borderRadius: '1.5rem',
+            border: '1px solid #e5e7eb',
+            backgroundColor: '#fff',
+            overflow: 'hidden',
+          }}
+        >
+          <div className="modal-header px-4 py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
             <h5 className="modal-title fw-bold" style={{ color: '#171717', fontFamily: 'serif' }}>Payment Required</h5>
             <button
               type="button"
-              className="btn-close"
+              className="btn-close shadow-none"
               onClick={onClose}
               aria-label="Close"
             ></button>
           </div>
-          <div className="modal-body">
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
+          <div className="modal-body p-4">
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="alert alert-danger"
+                  role="alert"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="mb-3 p-3 rounded-3" style={{ backgroundColor: "#f9fafb", border: "1px solid #f3f4f6" }}>
+              <h6 className="fw-bold mb-2">Booking Summary</h6>
+              <div className="d-flex justify-content-between mb-1">
+                <span className="text-muted small">Booking ID</span>
+                <span className="fw-semibold font-monospace small">{booking._id?.slice(-10)}</span>
               </div>
-            )}
-            <div className="mb-3">
-              <h6 className="fw-bold">Booking Details</h6>
-              <p className="mb-1">
-                <strong>Booking ID:</strong> {booking._id}
-              </p>
-              <p className="mb-1">
-                <strong>Amount:</strong> ₹{booking.price}
-              </p>
-              <p className="mb-0">
-                <strong>Status:</strong> {booking.status}
-              </p>
+              <div className="d-flex justify-content-between mb-1">
+                <span className="text-muted small">Amount</span>
+                <span className="fw-bold text-success">₹{booking.price}</span>
+              </div>
+              <div className="d-flex justify-content-between">
+                <span className="text-muted small">Status</span>
+                <span className="badge bg-warning text-dark">{booking.status}</span>
+              </div>
             </div>
-            <div className="alert alert-info">
+
+            <div className="alert alert-info py-2 px-3 mb-0" style={{ borderRadius: "10px" }}>
               <small>
                 Please complete the payment to confirm your booking. You will be redirected to
-                Razorpay payment gateway.
+                Razorpay secure payment gateway.
               </small>
             </div>
           </div>
-          <div className="modal-footer">
+          <div className="modal-footer px-4 py-3 border-0 bg-light">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-outline-secondary px-3 py-2"
               onClick={onClose}
               disabled={loading}
+              style={{ borderRadius: "10px" }}
             >
               Cancel
             </button>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               type="button"
-              className="btn btn-primary"
+              className="btn btn-primary px-4 py-2 fw-semibold"
               onClick={handlePayment}
               disabled={loading}
+              style={{
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, #0d2aabff 0%, #081b70 100%)",
+                border: "none"
+              }}
             >
-              {loading ? 'Processing...' : 'Pay ₹' + booking.price}
-            </button>
+              {loading ? 'Processing...' : `Pay ₹${booking.price}`}
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 export default PaymentModal;
-

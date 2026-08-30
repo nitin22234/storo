@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supportAPI } from '../api';
+import { FadeIn, StaggerContainer, StaggerItem, HoverCard } from '../components/MotionEffects';
 
 function Support() {
     const [formData, setFormData] = useState({
@@ -26,10 +28,8 @@ function Support() {
                 text: 'Support request submitted successfully! We\'ll get back to you soon.'
             });
 
-            // Clear form
             setFormData({ subject: '', message: '' });
 
-            // Clear success message after 5 seconds
             setTimeout(() => {
                 setMessage({ type: '', text: '' });
             }, 5000);
@@ -47,108 +47,134 @@ function Support() {
     ];
 
     return (
-        <div style={{ backgroundColor: "#ffffff", minHeight: '100vh', paddingTop: '2rem', paddingBottom: '2rem', color: "#1a1a1a" }}>
-            <div className="container" style={{ maxWidth: '900px' }}>
-                <div className="text-center mb-5">
-                    <div className="mb-3">
-                        <span style={{ fontSize: '3.5rem' }}>💬</span>
+        <div style={{ backgroundColor: "#ffffff", minHeight: '100vh', paddingTop: '2rem', paddingBottom: '2rem', color: "#1a1a1a", position: "relative", overflow: "hidden" }}>
+            <div className="container" style={{ maxWidth: '900px', position: "relative", zIndex: 1 }}>
+                <FadeIn direction="up">
+                    <div className="text-center mb-5">
+                        <motion.span
+                            animate={{ y: [-4, 4, -4] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="d-inline-block mb-2"
+                            style={{ fontSize: '3.5rem' }}
+                        >
+                            💬
+                        </motion.span>
+                        <h2 className="fw-bold mb-2" style={{ color: '#1a1a1a', fontFamily: "'Inter', sans-serif" }}>Support Center</h2>
+                        <p style={{ color: '#6b7280' }}>We're here to help you 24/7 across India</p>
                     </div>
-                    <h2 className="fw-bold mb-2" style={{ color: '#1a1a1a', fontFamily: "'Inter', sans-serif" }}>Support Center</h2>
-                    <p style={{ color: '#6b7280' }}>We're here to help you 24/7</p>
-                </div>
+                </FadeIn>
 
-                <div className="row g-4 mb-5">
+                <StaggerContainer staggerChildren={0.12} className="row g-4 mb-5">
                     <div className="col-md-4">
-                        <div className="bg-white shadow-sm p-4 rounded-4 text-center h-100" style={{ border: '1px solid #e5e7eb' }}>
-                            <div className="mb-3" style={{ fontSize: '2.5rem' }}>📧</div>
-                            <h5 className="fw-bold mb-2" style={{ color: '#1a202c' }}>Email</h5>
-                            <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>support@storo.com</p>
-                        </div>
+                        <StaggerItem className="h-100">
+                            <HoverCard className="bg-white shadow-sm p-4 rounded-4 text-center h-100 border">
+                                <div className="mb-3" style={{ fontSize: '2.5rem' }}>📧</div>
+                                <h5 className="fw-bold mb-2" style={{ color: '#1a202c' }}>Email</h5>
+                                <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>support@storo.com</p>
+                            </HoverCard>
+                        </StaggerItem>
                     </div>
                     <div className="col-md-4">
-                        <div className="bg-white shadow-sm p-4 rounded-4 text-center h-100" style={{ border: '1px solid #e5e7eb' }}>
-                            <div className="mb-3" style={{ fontSize: '2.5rem' }}>📞</div>
-                            <h5 className="fw-bold mb-2" style={{ color: '#1a202c' }}>Phone</h5>
-                            <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>+91 1800-XXX-XXXX</p>
-                        </div>
+                        <StaggerItem className="h-100">
+                            <HoverCard className="bg-white shadow-sm p-4 rounded-4 text-center h-100 border">
+                                <div className="mb-3" style={{ fontSize: '2.5rem' }}>📞</div>
+                                <h5 className="fw-bold mb-2" style={{ color: '#1a202c' }}>Phone</h5>
+                                <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>+91 1800-XXX-XXXX</p>
+                            </HoverCard>
+                        </StaggerItem>
                     </div>
                     <div className="col-md-4">
-                        <div className="bg-white shadow-sm p-4 rounded-4 text-center h-100" style={{ border: '1px solid #e5e7eb' }}>
-                            <div className="mb-3" style={{ fontSize: '2.5rem' }}>💬</div>
-                            <h5 className="fw-bold mb-2" style={{ color: '#1a202c' }}>Live Chat</h5>
-                            <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>Available 24/7</p>
-                        </div>
+                        <StaggerItem className="h-100">
+                            <HoverCard className="bg-white shadow-sm p-4 rounded-4 text-center h-100 border">
+                                <div className="mb-3" style={{ fontSize: '2.5rem' }}>💬</div>
+                                <h5 className="fw-bold mb-2" style={{ color: '#1a202c' }}>Live Chat</h5>
+                                <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>Available 24/7</p>
+                            </HoverCard>
+                        </StaggerItem>
                     </div>
-                </div>
+                </StaggerContainer>
 
                 {/* Contact Form */}
-                <div className="bg-white shadow-sm p-5 rounded-4 mb-5" style={{ border: '1px solid #e5e7eb' }}>
-                    <h4 className="fw-bold mb-4" style={{ color: '#1a202c' }}>Send us a message</h4>
+                <FadeIn direction="up" delay={0.2}>
+                    <div className="bg-white shadow-sm p-4 p-md-5 rounded-4 mb-5 border">
+                        <h4 className="fw-bold mb-4" style={{ color: '#1a202c' }}>Send us a message</h4>
 
-                    {message.text && (
-                        <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'} mb-4`} role="alert">
-                            {message.text}
-                        </div>
-                    )}
+                        <AnimatePresence>
+                            {message.text && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className={`alert alert-${message.type === 'success' ? 'success' : 'danger'} mb-4`}
+                                    role="alert"
+                                    style={{ borderRadius: "10px" }}
+                                >
+                                    {message.text}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-4">
-                            <label className="form-label fw-bold" style={{ color: '#1a202c' }}>Subject</label>
-                            <input
-                                type="text"
-                                name="subject"
-                                className="form-control form-control-lg"
-                                placeholder="What can we help you with?"
-                                value={formData.subject}
-                                onChange={handleChange}
-                                required
-                                style={{ borderColor: '#e5e7eb' }}
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="form-label fw-bold" style={{ color: '#1a202c' }}>Message</label>
-                            <textarea
-                                name="message"
-                                className="form-control form-control-lg"
-                                rows="5"
-                                placeholder="Describe your issue or question..."
-                                value={formData.message}
-                                onChange={handleChange}
-                                required
-                                style={{ borderColor: '#e5e7eb' }}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="btn w-100 py-3 fw-bold"
-                            disabled={submitting}
-                            style={{
-                                background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '0.75rem'
-                            }}
-                        >
-                            {submitting ? 'Sending...' : 'Send Message'}
-                        </button>
-                    </form>
-                </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-4">
+                                <label className="form-label fw-bold" style={{ color: '#1a202c' }}>Subject</label>
+                                <input
+                                    type="text"
+                                    name="subject"
+                                    className="form-control form-control-lg shadow-none"
+                                    placeholder="What can we help you with?"
+                                    value={formData.subject}
+                                    onChange={handleChange}
+                                    required
+                                    style={{ borderColor: '#e5e7eb', borderRadius: "10px", fontSize: "1rem" }}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="form-label fw-bold" style={{ color: '#1a202c' }}>Message</label>
+                                <textarea
+                                    name="message"
+                                    className="form-control form-control-lg shadow-none"
+                                    rows="5"
+                                    placeholder="Describe your issue or question..."
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
+                                    style={{ borderColor: '#e5e7eb', borderRadius: "10px", fontSize: "1rem" }}
+                                />
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                className="btn w-100 py-3 fw-bold"
+                                disabled={submitting}
+                                style={{
+                                    background: 'linear-gradient(135deg, #0d2aabff 0%, #081b70 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '0.75rem'
+                                }}
+                            >
+                                {submitting ? 'Sending...' : 'Send Message →'}
+                            </motion.button>
+                        </form>
+                    </div>
+                </FadeIn>
 
                 {/* Quick FAQs */}
-                <div className="bg-white shadow-sm p-4 rounded-4" style={{ border: '1px solid #e5e7eb' }}>
-                    <h4 className="fw-bold mb-4" style={{ color: '#1a202c' }}>Quick Answers</h4>
-                    {faqs.map((faq, index) => (
-                        <div key={index} className="mb-3">
-                            <h6 className="fw-bold" style={{ color: '#1a202c' }}>{faq.q}</h6>
-                            <p style={{ color: '#4a5568', marginBottom: index !== faqs.length - 1 ? '1rem' : '0' }}>{faq.a}</p>
-                        </div>
-                    ))}
-                </div>
+                <FadeIn direction="up" delay={0.3}>
+                    <div className="bg-white shadow-sm p-4 rounded-4 border">
+                        <h4 className="fw-bold mb-4" style={{ color: '#1a202c' }}>Quick Answers</h4>
+                        {faqs.map((faq, index) => (
+                            <div key={index} className="mb-3 pb-3 border-bottom">
+                                <h6 className="fw-bold" style={{ color: '#1a202c' }}>{faq.q}</h6>
+                                <p style={{ color: '#4a5568', marginBottom: 0, fontSize: "0.95rem" }}>{faq.a}</p>
+                            </div>
+                        ))}
+                    </div>
+                </FadeIn>
             </div>
         </div>
     );
 }
 
 export default Support;
-
-
